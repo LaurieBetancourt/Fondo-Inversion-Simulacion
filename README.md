@@ -9,9 +9,9 @@ que requiere como inversión inicial para el final de la operación.
 El proyecto fue parte de la calificación final de la materia de *Simulación de seguros y fianzas* de la Licenciatura de Actuaria. 
 
 Los documentos son los siguientes:
--	Descripción del proyecto
--	Reporte ejecutivo y Reporte técnico
-
+-	[Descripción del proyecto](https://github.com/LaurieBetancourt/Fondo-Inversion-Simulacion/blob/main/PDF-Reporte/ProyectoFinalSIMULACION.pdf)
+-	[Reporte ejecutivo y Reporte técnico](https://github.com/LaurieBetancourt/Fondo-Inversion-Simulacion/blob/main/PDF-Reporte/Reporte-Ejecutivo-Reporte-Tecnico.pdf)
+- Codigo en R
 
 ## Aprendizaje
 -	Aplicación del modelo de movimiento browniano
