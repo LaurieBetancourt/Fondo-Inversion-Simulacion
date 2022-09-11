@@ -1,0 +1,441 @@
+---
+title: "Simulacion Final"
+author: "Laura Elena Betancourt Leal"
+date: "5/5/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r workspace}
+
+setwd("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL")
+
+```
+
+
+
+# Simulación CETES 182 Dias
+
+
+Funciones
+
+```{r funciones}
+
+library(ggplot2)
+library(ggnewscale)
+library(RColorBrewer)
+
+#### Funciones ####
+MBG <- function(m,n,t,mu,sigma,s0,out)
+{
+  MBrown <- matrix(qnorm(runif(m*n,min=0,max=1),mean=mu,sd=sigma),n,m)
+  tau <- (1:n)/t
+  Scenarios <- t(s0*exp((mu-0.5*(sigma^2))*tau+sigma*(tau^0.5)*MBrown))
+  dim(Scenarios)
+  MScenarios <- data.frame(X=as.vector(Scenarios),
+                           Id=seq(nrow(Scenarios)),
+                          tiempo=rep(seq(ncol(Scenarios)),each=nrow(Scenarios)))
+  if (out=='Graph')
+  {
+    ggplot(MScenarios, aes(x = tiempo, y = X, group = Id)) + 
+    geom_point()+ geom_line() + 
+    coord_cartesian(ylim=c(min(Scenarios),max(Scenarios))) +
+      xlab("Tiempo") + ylab("Tasas")+
+      scale_color_gradient2(low="#80CBC4",high="#006064")+
+      
+      ggtitle("Simulación de Escenarios", 
+           subtitle = "Tasa CETES")+
+      
+      theme_test() +
+      theme(plot.title = element_text(color="black", 
+                                    size = 12,face="bold"), 
+            plot.subtitle = element_text(size = 10, 
+                                         face = "bold.italic",
+                                         color = "#616E7C"))
+      
+      
+  }
+  else if(out=='Data')
+  {
+    return(MScenarios)
+
+  }
+}
+
+VInv <- function(VInv,Plazo,Tasa,Tipo)
+{
+  df = 1/(1+Tasa*Plazo/360)
+  if (Tipo=='VP')
+  {
+    return(VInv*df)  
+  }
+  else if (Tipo=='VF')
+  {
+    return(VInv/df)
+  }
+}
+
+```
+
+
+cargar datos
+
+```{r}
+#dir_inp <-"/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/equipo"
+
+#CETES182_2 <- read_csv("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/equipo/CETES182-2.csv", sep = "")
+
+#dir_inp = "/Users/Laurie/Desktop/CETES182-2.csv"
+#setwd("/Users/Lauris/Desktop")
+
+#dir_inp = "/Users/Lauris/Desktop"
+#DT_Cetes <- read.csv(paste(dir_inp,"CETES182-2.csv",sep = ""),sep = ";")
+
+#DT_Cetes <- read.csv(paste(dir_inp,"CETES182-2.csv",sep = ""),sep = ";")
+```
+
+
+```{r datos cetes182}
+library(readxl)
+DT_Cetes <- read_excel("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/CETES_DATA_v2.xlsx")
+
+
+```
+
+
+
+
+
+```{r}
+# Gr?fica de Tasa CETES-182 (?ltimos 12 Meses)
+plot(DT_Cetes$tasa_100/100,type="l",col="#0277BD",
+     main="CETE182 (Abril 2020 - Marzo 2021)",
+     xlab="Semanas",
+     ylab="Tasa (%)")
+
+
+```
+
+
+
+```{r graf cetes182 v2}
+
+ggplot(data=DT_Cetes, aes(y=tasa_100/100,x=fecha)) + 
+  geom_line(size=1,color="#F53B3B") +
+  ggtitle("CETES 182", subtitle="Fecha: 2/04/2020 - 31/03/2020") +
+  theme_test() + 
+  theme(plot.title = element_text(color="black", 
+                                    size = 12,face="bold"), 
+        plot.subtitle = element_text(size = 10, face = "bold.italic",
+                                     color = "#616E7C"))+
+    ylab("Tasa (%)")+ xlab("Fecha")
+
+```
+
+
+
+
+```{r}
+#### Proyecci?n Primeros 6 Meses ####
+
+library(dplyr)
+#F6M = "24/09/2020"
+#F6M <- as.Date(F6M)
+#F6M <- dmy(F6M)
+
+DT_Cetes_6M <- DT_Cetes[1:26,]
+DT_Cetes_12M <- DT_Cetes[27:53,]
+
+#DT_Cetes_12M <- select(DT_Cetes, DT_Cetes$fecha > F6M)
+
+m = 20000
+n = dim(DT_Cetes_12M)[1]
+t = dim(DT_Cetes)[1]
+
+### Resultados de EXCEL
+####mu anterior
+#r = 1*mean(DT_Cetes_12M$tasa_100)/10000
+#sigma = sd(DT_Cetes_12M$tasa_100/100)
+s0 <- DT_Cetes_12M$tasa_100[27]/100 #Tomando la tasa del 2021-03-31 CETES
+r = -0.365412640366938 # Resultados de Excel
+sigma = 0.142340023225895 # Resultados de Excel
+
+#-----------------------------------
+
+#MBG(m,n,t,r,sigma,s0,'Graph')
+aux = MBG(m,n,t,r,sigma,s0,'Data')
+Yn = mean(aux[aux$tiempo==27,]$X) #Tomando la tasa del 2021-03-31 CETES
+
+
+
+eps = 1/1000000
+Ym = Yn+0.01
+k = 0
+p = 100
+m = m+p
+
+while (abs(Yn-Ym)>eps)
+{
+  aux = MBG(m,n,t,r,sigma,s0,'Data')
+  Ym = mean(aux[aux$tiempo==27,]$X)
+  if (abs(Yn-Ym)>eps)
+  {
+    Yn = Ym
+    m = m+p
+    k = k+1
+  }
+}
+Yn
+Ym
+k
+
+```
+
+
+Intervalo de confianza
+
+```{r intervalo conf}
+
+
+#------intervalo de confianza
+stand <- sd(escenarios$X)
+lim.sup <- Yn + qnorm(.95)*(stand/sqrt(m))
+lim.inf <- Yn - qnorm(.95)*(stand/sqrt(m))
+#----------------------------------
+
+data.conf <- data.frame("Limite_Inferior"=lim.inf,
+                        "Valor_Esperado"=Yn,
+                        "Limite_superior"=lim.sup)
+```
+
+
+```{r}
+
+#### Soluci?n Ejercicio ####
+Valor_Inv = 80000000
+Plazo_Inv = 180
+Spread = 400
+Yn.1=3.446288 
+Tasa = (Yn.1/100)+(Spread/10000)
+
+Valor_Inicial = VInv(Valor_Inv,Plazo_Inv,Tasa,'VP')
+# Check
+Valor_Final = VInv(Valor_Inicial,Plazo_Inv,Tasa,'VF')
+
+
+data.montosV <- data.frame("Tasa"=Tasa*100,
+                           "ValorInicial"=Valor_Inicial,
+                           "ValorFinal"=Valor_Final)
+
+#------intervalo de confianza
+stand <- sd(escenarios$X)
+lim.sup <- Yn + qnorm(.95)*(stand/sqrt(m))
+lim.inf <- Yn - qnorm(.95)*(stand/sqrt(m))
+#----------------------------------
+
+### Montos con tasas limite inf. y limite sup.
+
+### Lim inferior
+Tasa.inf = (lim.inf/100)+(Spread/10000)
+Valor_Inicial.inf = VInv(Valor_Inv,Plazo_Inv,Tasa.inf,'VP')
+# Check
+Valor_Final.inf = VInv(Valor_Inicial.inf,Plazo_Inv,Tasa.inf,'VF')
+
+
+#Limite superior
+Tasa.sup = (lim.sup/100)+(Spread/10000)
+Valor_Inicial.sup = VInv(Valor_Inv,Plazo_Inv,Tasa.sup,'VP')
+# Check
+Valor_Final.sup = VInv(Valor_Inicial.sup,Plazo_Inv,Tasa.sup,'VF')
+
+
+data.montosV.lims <- data.frame("Limite"=c("Limite inferior", 
+                                           "Limite Superior"),
+                           "Tasa"=c(Tasa.inf*100,Tasa.sup*100),    
+                           "ValorInicial"=c(Valor_Inicial.inf,
+                                            Valor_Inicial.sup),
+                           "ValorFinal"=c(Valor_Final.inf,
+                                          Valor_Final.sup))
+
+
+```
+
+
+
+# Graficas
+
+
+```{r grafica escenarios}
+#matplot(r, type = "l", main="Modelo Rendleman & Bartter")
+
+m = 100
+n = dim(DT_Cetes_12M)[1]
+t = dim(DT_Cetes)[1]
+#r = 1*mean(DT_Cetes_12M$tasa_100)/10000
+#sigma = sd(DT_Cetes_12M$tasa_100/100)
+s0 <- DT_Cetes_12M$tasa_100[27]/100
+r = -0.365412640366938
+sigma = 0.142340023225895
+
+
+MBG(m,n,t,r,sigma,s0,'Graph')
+
+
+```
+
+
+
+convergencia Montecarlo
+
+```{r montecarlo}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+
+accum <- aux %>% mutate(media_acum = cumsum(aux[aux$tiempo==27,]$X)/(1:n()), n = 1:n())
+
+ggplot(accum, aes(x = media_acum, y = n)) +
+   geom_line(col = "#2980B9", lwd = 1) + 
+   geom_hline(yintercept = Data.intervalos$Valor_esperado, col="red", lty = 2, lwd = 1.1, alpha = .8) + 
+   geom_hline(yintercept = Data.intervalos$Limite_inferior, col="#5D6D7E", lty = 4, lwd = 1, alpha = 1)+
+   geom_hline(yintercept = Data.intervalos$Limite_superior, col="#5D6D7E", lty = 4, lwd = 1, alpha = 1) +
+   ylim(m - s/6, m + s/6) +
+   ylab("Media Acumulada") +
+   xlab("Número de Simulaciones")+
+   ggtitle("Convergencia de la Media", 
+           "Tasa CETES") + 
+   theme_test() + 
+  theme(plot.title = element_text(color="black", 
+                                    size = 12,face="bold"), plot.subtitle = element_text(size = 10, face = "bold.italic", 
+                                                                                         color = "#616E7C")) #+
+  # annotate("text", x = dim(accum)[1]/2, y = m + 2*s/15, colour = "#F42343", size = 4,
+   #         label = paste("Promedio de  la Tasa", round(Yn,4)))
+```
+
+
+```{r}
+escenarios <- aux[aux$tiempo==27,]
+
+accum <- escenarios %>% mutate(media_acum = cumsum(escenarios$X)/(1:n()), 
+                               n = 1:n())
+
+#estim <- select(accum, media_acum, n)
+#estim <- estim[522700:542700,]
+
+ggplot(accum, aes(y = media_acum, x = n)) +
+ geom_line(col = "#243A50", lwd = 1) + 
+ geom_hline(yintercept = mean(accum$X), 
+             col="red", lty = 2, lwd = 1, alpha = .8) +
+  geom_hline(yintercept = data.conf$Limite_Inferior, 
+             col="#5D6D7E", lty = 2, lwd = 1, alpha = .8)+
+  geom_hline(yintercept = data.conf$Limite_superior, 
+             col="#5D6D7E", lty = 2, lwd = 1, alpha = .8)+
+  
+  ggtitle("Convergencia de la Media", 
+           paste("Valor Esperado: ",round(mean(accum$X),4))) +
+  theme_test() + 
+  theme(plot.title = element_text(color="black", 
+                                    size = 12,face="bold"), 
+        plot.subtitle = element_text(size = 10, face = "bold.italic",
+                                     color = "#616E7C"))+
+  xlab("Simulaciones")+ ylab("Media Acumulada")
+  
+```
+
+
+
+```{r graf escenarios v2}
+
+
+library(ggplot2)
+
+ggplot(aux, aes(x = tiempo, y = X, group = Id)) + 
+    geom_point()+ geom_line() + 
+    coord_cartesian(ylim=c(min(aux),max(aux))) +
+      xlab("Tiempo") + ylab("Tasas")+
+      scale_color_gradient2(low="#80CBC4",high="#006064")+
+      
+      ggtitle("Simulación de Escenarios", 
+           subtitle = "Tasa CETES")+
+      
+      theme_test() +
+      theme(plot.title = element_text(color="black", 
+                                    size = 12,face="bold"), 
+            plot.subtitle = element_text(size = 10, 
+                                         face = "bold.italic",
+                                         color = "#616E7C"))
+
+
+```
+
+
+
+
+
+
+
+```{r}
+#### Soluci?n Ejercicio ####
+Valor_Inv = 80000000
+Plazo_Inv = 180
+Spread = 400
+Tasa = (Yn/100)+(Spread/10000)
+
+Valor_Inicial = VInv(Valor_Inv,Plazo_Inv,Tasa,'VP')
+Valor_Inicial
+
+# Check
+Valor_Final = VInv(Valor_Inicial,Plazo_Inv,Tasa,'VF')
+Valor_Final
+
+#### FIN ####
+
+
+```
+
+
+
+
+```{r Desviaciones Opcion 2 CETES}
+
+m = 20000
+VFinal <- 80000000
+
+tasas_aux <- aux$X/100
+
+promedio_aux <- mean(tasas_aux)
+
+# Nivel Conf
+desv2 <-sd(tasas_aux)
+
+intervalo2 <- c(promedio_aux-(qnorm(.975)*desv2/sqrt(m)),
+                promedio_aux+(qnorm(.975)*desv2/sqrt(m)),
+                promedio_aux)
+
+#Conf con montos tiempo cer0
+Intervalos_montos2 <- c(VFinal*(1+intervalo2[1])^-1,
+                       VFinal*(1+intervalo2[2])^-1,
+                       VFinal*(1+promedio_aux)^-1)
+
+# conf con monto valor final
+M_esperado2 <- c(Intervalos_montos2[1]*(1+intervalo2[1])^1,
+                Intervalos_montos2[2]*(1+intervalo2[2])^1,
+                Intervalos_montos2[3]*(1+intervalo2[3])^1)
+
+
+# Data
+Data.intervalos <- data.frame("Limite_inferior"=intervalo2[1],
+                              "Valor_esperado"=Yn,
+                              "Limite_superior"=intervalo2[2])
+
+Data.montoFinal <-data.frame("Monto_Final_inf"=M_esperado2[1],
+                             "Monto_Final_Esperado"=M_esperado2[3],
+                             "Monto_Final_sup"=M_esperado2[2])
+
+
+```
+
+
+
+
