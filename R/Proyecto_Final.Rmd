@@ -9,7 +9,7 @@ output:
 
 ```{r workspace}
 
-setwd("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL")
+setwd("~/Simulacion FINAL")
 
 ```
 
@@ -81,24 +81,9 @@ VInv <- function(VInv,Plazo,Tasa,Tipo)
 
 cargar datos
 
-```{r}
-#dir_inp <-"/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/equipo"
-
-#CETES182_2 <- read_csv("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/equipo/CETES182-2.csv", sep = "")
-
-#dir_inp = "/Users/Laurie/Desktop/CETES182-2.csv"
-#setwd("/Users/Lauris/Desktop")
-
-#dir_inp = "/Users/Lauris/Desktop"
-#DT_Cetes <- read.csv(paste(dir_inp,"CETES182-2.csv",sep = ""),sep = ";")
-
-#DT_Cetes <- read.csv(paste(dir_inp,"CETES182-2.csv",sep = ""),sep = ";")
-```
-
-
 ```{r datos cetes182}
 library(readxl)
-DT_Cetes <- read_excel("C:/Users/Lauris/OneDrive - Red de Universidades Anáhuac/Universidad OneDrive/Semestre VIII drive/Simulacion seg y fin/Simulacion FINAL/CETES_DATA_v2.xlsx")
+DT_Cetes <- read_excel("~/Simulacion FINAL/CETES_DATA_v2.xlsx")
 
 
 ```
