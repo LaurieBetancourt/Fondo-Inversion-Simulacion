@@ -11,7 +11,7 @@ El proyecto fue parte de la calificación final de la materia de *Simulación de
 Los documentos son los siguientes:
 -	[Descripción del proyecto](https://github.com/LaurieBetancourt/Fondo-Inversion-Simulacion/blob/main/PDF-Reporte/ProyectoFinalSIMULACION.pdf)
 -	[Reporte ejecutivo y Reporte técnico](https://github.com/LaurieBetancourt/Fondo-Inversion-Simulacion/blob/main/PDF-Reporte/Reporte-Ejecutivo-Reporte-Tecnico.pdf)
-- Codigo en R
+- [Codigo en R](https://github.com/LaurieBetancourt/Fondo-Inversion-Simulacion/blob/main/R/Proyecto_Final.Rmd)
 
 ## Aprendizaje
 -	Aplicación del modelo de movimiento browniano
